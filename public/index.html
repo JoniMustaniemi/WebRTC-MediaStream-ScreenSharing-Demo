@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>WebRTC: Peer To Peer screen sharing Demo</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="./css/mainStyle.css" type="text/css" media="all">
+  </link>
+  <script src="./js/lib/adapter.js"></script>
+  <script src="./typescript/RTCShareManager.js"></script>
+</head>
+<body id="body">
+  <script type="module">
+
+        const live_mode_button = document.getElementById("liveModeButton");
+        const screen_mode_button_container = document.getElementById("screenModeButtonContainer");
+        const screen_mode_toggle = document.getElementById("screenButton");
+        const screen_container_client_2 = document.getElementById("screenContainer");
+        
+        const rtc = new RTCShareManager({
+           event_handlers: {
+              on_live_mode: function(args) {
+                if(args.isLive) {
+                  live_mode_button.classList.add("button-active");
+                  
+                } else {
+                  live_mode_button.classList.remove("button-active");
+                  screen_mode_button_container.classList.remove("button-active");
+                  screen_mode_button_container.classList.add("opacity-0");
+                  screen_container_client_2.innerHTML = "";
+                }
+              },
+            on_screen_mode: function(args) {
+              if(args.screenMode) {
+                screen_mode_button_container.classList.add("button-active");
+                } else {
+                  screen_mode_button_container.classList.remove("button-active");
+                } 
+          },
+          on_screen_receive: function(args) {
+            screen_container_client_2.classList.remove("opacity-0");
+          },
+            on_established_connection: function(args) {
+              screen_mode_button_container.classList.remove("opacity-0");
+            }
+          }
+          });         
+
+        
+                    live_mode_button.addEventListener("click", () => rtc.liveMode());
+                    screen_mode_toggle.addEventListener("click", () => rtc.toggleScreenSharing());
+                  
+
+    </script>
+
+
+
+
+  <div class="infoWrapper">
+    <div class="infoHeader">
+      <h1>Instructions</h1>
+    </div>
+    <div class="infoContainer">
+      <p id="firstrule">1. Enter Livemode &lpar;<img src="./livehelp.png"/>&rpar; </p>
+      <p id="secondrule">2. Start Screen Broadcasting &lpar;<img src="./screenHelp.png"/>&rpar;</p>
+    </div>
+  </div>
+
+  <div class="basicButton1 livemode">
+    <button id="liveModeButton"><img src="liveIcon.png" class="shareIcon1" /> </button>
+  </div>
+
+  <div class="basicButton1 screenMode opacity-0" id="screenModeButtonContainer" >
+    <button id="screenButton"><img src="screenShareIcon.png" class="shareIcon1 "/> </button>
+  </div>
+
+
+  <!-- ---------------------------------- CLIENT 1 ------------------------------------------------ -->
+  <div class="clientWrapper">
+   
+    <div class="client1">
+      <h1>Client 1 &#8212; Sharing Screen</h1>
+    </div>
+  </div>
+
+  <!-- ---------------------------------- CLIENT 2 ------------------------------------------------ -->
+  <div class="clientWrapper">
+    <div class="client2">
+      <h1>Client 2 &#8212; Receiving Screen</h1>
+      <div id="screenContainer">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
