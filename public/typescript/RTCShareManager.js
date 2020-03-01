@@ -183,7 +183,7 @@ var ConnectionManager = /** @class */ (function () {
             }
         }
     };
-    //sets local description, creates offer and sends it to correct client
+
     ConnectionManager.prototype.createOffer = function (RTC_object, client) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, debugOffer, error_1;
@@ -214,8 +214,7 @@ var ConnectionManager = /** @class */ (function () {
             });
         });
     };
-    //sets remote description based on type (offer or answer)
-    //if type is 'answer' completes the handshake and checks if RTCPeerConnection object is connected succesfully
+   
     ConnectionManager.prototype.setRemote = function (sessionDesc, type, RTC_object) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, error_2, error_3;
@@ -377,7 +376,7 @@ var ScreenSharing = /** @class */ (function () {
         this.screenContainer = document.getElementById("screenContainer");
         this.getMedia();
     }
-    //asks access to user microphone and adds audiotracks to correct RTCPeerConnection
+   
     ScreenSharing.prototype.getMedia = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
