@@ -13,10 +13,12 @@ class ConnectionManager {
   public stopLiveMode: Function;
   public onReceiveScreen: Function;
 
+  //creates reference for UI element handling
   constructor(options: any) {
     this.options = options;
   }
 
+  //initializes RTCPeerConnection objects and sets appropriate eveten handlers for each client
   public startConnection(liveModeStatus: boolean, client: string) {
     if (client == "1") {
       this.liveModeStatus_client_1 = liveModeStatus;
@@ -56,13 +58,15 @@ class ConnectionManager {
           }
         }
       };
-
+      
+       //when negotiation is needed starts connection handshake procedure
       this.RTCPeerConnectionObject_client_1.onnegotiationneeded = () => {
         if (this.liveModeStatus_client_1 && this.liveModeStatus_client_2) {
           this.createOffer(this.RTCPeerConnectionObject_client_1, "1");
         }
       }
 
+       //listens RTCPeerConnection objects for connection state changes and makes appropriate actions
       this.RTCPeerConnectionObject_client_1.addEventListener("iceconnectionstatechange", ev => {
         if (this.RTCPeerConnectionObject_client_1) {
           if (this.RTCPeerConnectionObject_client_1.iceConnectionState === "disconnected") {
@@ -77,6 +81,8 @@ class ConnectionManager {
           }
         }
       }, false);
+
+      //listens datachannel for various events and takes appropriate action
       this.datachannel.onopen = (event) => {
 
         this.handleDataChannelOpen(event, "1");
@@ -100,6 +106,7 @@ class ConnectionManager {
         }
       }, false);
 
+      //When IceCandidate is found adds it to the other client
       this.RTCPeerConnectionObject_client_2.onicecandidate = (event) => {
         if (event.candidate) {
           try {
@@ -112,6 +119,7 @@ class ConnectionManager {
         }
       };
 
+       //when track is received delivers track event information to RTCShareManager and updates UI elements
       this.RTCPeerConnectionObject_client_2.ontrack = (event) => {
         if (typeof this.options.event_handlers.on_screen_receive === 'function') {
           this.options.event_handlers.on_screen_receive({});
@@ -160,6 +168,7 @@ class ConnectionManager {
     this.checkLivemodeStatuses(this.liveModeStatus_client_1, this.liveModeStatus_client_2);
   }
 
+  // handles updating UI elements when neither client is in livemode because connection objects were terminated
   private checkLivemodeStatuses(status_client_1, status_client_2) {
     if (status_client_1 == false || status_client_2 == false) {
       if (typeof this.options.event_handlers.no_live_mode === 'function') {
@@ -168,6 +177,7 @@ class ConnectionManager {
     }
   }
 
+  //creates SDP offer for the purpose of starting a new WebRTC connection with another client
   private async createOffer(RTC_object: RTCPeerConnection, client: string) {
     try {
       if (client == "1") {
@@ -188,6 +198,7 @@ class ConnectionManager {
     if (type == "offer") {
       try {
         await RTC_object.setRemoteDescription(sessionDesc);
+        //sets another clients SDP offer to remote end of connection
         this.answer_client_2 = await RTC_object.createAnswer();
         await RTC_object.setLocalDescription(this.answer_client_2);
         if (RTC_object.signalingState == "stable") {
@@ -236,6 +247,7 @@ class RTCShareManager {
       options
     );
 
+     //if WebRTC connection fails, initializes restart functionality
     this.conMan.stopLiveMode = (args: any) => {
       this.stopLiveMode(null, args.restart);
     }
@@ -244,7 +256,8 @@ class RTCShareManager {
       this.screenSharing.receiveMedia(args.event);
     }
   }
-
+  
+//handles screen share functionality. updates UI elements and initializes new ScreenSharing instance or stops videotracks if screenmode is turned off
   public toggleScreenSharing() {
     if (typeof this.options.event_handlers.on_screen_mode === 'function') {
       this.options.event_handlers.on_screen_mode({
@@ -263,6 +276,7 @@ class RTCShareManager {
     }
   }
 
+  //handles livemode functionality. initializes connection sequences and is responsible for ending connection if livemode is turned off 
   public liveMode() {
     if (typeof this.options.event_handlers.on_live_mode === 'function') {
       this.options.event_handlers.on_live_mode({
@@ -340,6 +354,7 @@ class ScreenSharing {
     this.getMedia();
   }
 
+  //get access to user screen, add tracks to RTCPeerConnection object
   private async getMedia() {
     (<any>navigator.mediaDevices).getDisplayMedia(this.screenConstraints).then((stream: MediaStream) => {
         console.log("Sharing Screen");
@@ -363,6 +378,7 @@ class ScreenSharing {
     this.screenContainer.innerHTML = "";
   }
 
+  //create new mediastream object for received video track and attach stream to HTML video element
   public receiveMedia(event: MediaStreamTrackEvent) {
     let inboundStream = null;
     let screenPlayer: HTMLVideoElement = < HTMLVideoElement > document.createElement("VIDEO");
